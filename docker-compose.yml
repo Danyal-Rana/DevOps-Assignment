@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  # Backend Server
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: todo-server
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key}
+      - JWT_EXPIRE=7d
+      - NODE_ENV=production
+    networks:
+      - todo-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Frontend Client
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: todo-client
+    ports:
+      - "3000:80"
+    depends_on:
+      - server
+    networks:
+      - todo-network
+
+  # Selenium Tests (only runs when explicitly called)
+  selenium-tests:
+    build:
+      context: ./tests
+      dockerfile: Dockerfile
+    container_name: todo-tests
+    environment:
+      - APP_URL=http://client:80
+      - HEADLESS=true
+    volumes:
+      - ./tests/reports:/tests/reports
+    depends_on:
+      - client
+      - server
+    networks:
+      - todo-network
+    profiles:
+      - test  # Only runs with: docker-compose --profile test up
+
+networks:
+  todo-network:
+    driver: bridge

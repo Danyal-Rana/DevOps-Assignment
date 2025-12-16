@@ -20,6 +20,7 @@
 - [API Documentation](#-api-documentation)
 - [API Endpoints](#-api-endpoints)
 - [Environment Variables](#-environment-variables)
+- [Selenium Testing](#-selenium-testing)
 - [Screenshots](#-screenshots)
 - [DevOps Considerations](#-devops-considerations)
 - [License](#-license)
@@ -99,11 +100,17 @@ DevOps-Assignment/
 │   ├── 📂 config/
 │   │   └── swagger.js              # Swagger configuration
 │   ├── 📂 controllers/
-│   │   └── todo.controller.js      # Business logic
+│   │   ├── auth.controller.js      # Authentication logic
+│   │   └── todo.controller.js      # Todo CRUD logic
+│   ├── 📂 middleware/
+│   │   ├── auth.middleware.js      # JWT verification
+│   │   └── validation.middleware.js # Input validation
 │   ├── 📂 models/
-│   │   └── todo.model.js           # Mongoose schema
+│   │   ├── user.model.js           # User schema
+│   │   └── todo.model.js           # Todo schema
 │   ├── 📂 routes/
-│   │   └── todo.routes.js          # API routes with Swagger docs
+│   │   ├── auth.routes.js          # Auth endpoints
+│   │   └── todo.routes.js          # Todo endpoints
 │   ├── server.js                   # Entry point
 │   ├── .env                        # Environment variables
 │   ├── .env.example                # Environment template
@@ -115,18 +122,32 @@ DevOps-Assignment/
 │   │   └── index.html
 │   ├── 📂 src/
 │   │   ├── 📂 components/
+│   │   │   ├── Login.js            # Login form
+│   │   │   ├── Register.js         # Registration form
 │   │   │   ├── TodoForm.js         # Create/Edit form
 │   │   │   ├── TodoList.js         # List container
 │   │   │   └── TodoItem.js         # Individual todo card
+│   │   ├── 📂 context/
+│   │   │   └── AuthContext.js      # Auth state management
 │   │   ├── 📂 services/
-│   │   │   └── todoService.js      # API integration
+│   │   │   ├── authService.js      # Auth API calls
+│   │   │   └── todoService.js      # Todo API calls
 │   │   ├── App.js                  # Main component
 │   │   ├── index.js                # Entry point
 │   │   └── index.css               # Global styles
-│   ├── .env                        # Environment variables
-│   ├── .env.example                # Environment template
+│   ├── .env
+│   ├── .env.example
 │   ├── .gitignore
 │   └── package.json
+│
+├── 📂 tests/                       # Selenium Tests (Python)
+│   ├── conftest.py                 # Pytest fixtures
+│   ├── pytest.ini                  # Pytest config
+│   ├── requirements.txt            # Python dependencies
+│   ├── run_tests.py                # Test runner
+│   ├── Dockerfile                  # Docker for CI/CD
+│   ├── test_auth.py                # Authentication tests
+│   └── test_todo.py                # Todo CRUD tests
 │
 └── README.md                       # Project documentation
 ```
@@ -285,6 +306,80 @@ Content-Type: application/json
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `REACT_APP_API_URL` | Backend API URL | `http://localhost:5000/api` |
+
+---
+
+## 🧪 Selenium Testing
+
+This project includes **12 automated test cases** using Selenium WebDriver with Python for browser automation testing.
+
+### Test Structure
+
+```
+tests/
+├── conftest.py          # Pytest fixtures and configuration
+├── pytest.ini           # Pytest settings
+├── requirements.txt     # Python dependencies
+├── run_tests.py         # Test runner script
+├── Dockerfile           # Docker image for CI/CD
+├── test_auth.py         # Authentication tests (7 tests)
+└── test_todo.py         # Todo CRUD tests (5 tests)
+```
+
+### Test Cases
+
+| # | Test Case | Category | Description |
+|---|-----------|----------|-------------|
+| 1 | Register with valid data | Auth | Fill form, submit, verify success |
+| 2 | Register with invalid email | Auth | Check email validation error |
+| 3 | Register with short password | Auth | Check password validation error |
+| 4 | Login with valid credentials | Auth | Verify redirect to todos |
+| 5 | Login with wrong password | Auth | Check error message |
+| 6 | Login with empty fields | Auth | Check validation for empty form |
+| 7 | Create a new todo | CRUD | Add todo, verify it appears |
+| 8 | Mark todo as complete | CRUD | Toggle, verify status changes |
+| 9 | Edit an existing todo | CRUD | Update title, verify change |
+| 10 | Delete a todo | CRUD | Remove, verify it's gone |
+| 11 | Register with mismatched passwords | Auth | Check password mismatch error |
+| 12 | Session persistence after refresh | Auth | Verify user stays logged in |
+
+### Running Tests Locally
+
+```bash
+# Navigate to tests directory
+cd tests
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run all tests
+python run_tests.py
+
+# Run specific test categories
+python run_tests.py --auth    # Authentication tests only
+python run_tests.py --todo    # Todo CRUD tests only
+python run_tests.py --smoke   # Critical path tests only
+```
+
+### Running Tests with Docker
+
+```bash
+# Build Docker image
+docker build -t selenium-tests ./tests
+
+# Run tests in container
+docker run --rm \
+  -e APP_URL=http://host.docker.internal:3000 \
+  -v $(pwd)/tests/reports:/tests/reports \
+  selenium-tests
+```
+
+### Environment Variables for Testing
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `APP_URL` | Application URL to test | `http://localhost:3000` |
+| `HEADLESS` | Run Chrome in headless mode | `true` |
 
 ---
 
