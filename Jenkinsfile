@@ -1,6 +1,11 @@
 pipeline {
     agent any
     
+    // GitHub-triggered pipeline - runs automatically on push
+    triggers {
+        githubPush()
+    }
+    
     environment {
         COMPOSE_PROJECT_NAME = 'todo-app'
         MONGO_URI = credentials('mongo-uri')  // Set in Jenkins Credentials
@@ -80,6 +85,24 @@ pipeline {
             ✅ Check HTML report for details
             ========================================
             '''
+            // Email notification on success to all collaborators
+            emailext(
+                subject: "✅ Build SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """
+                    <h2>Build Successful!</h2>
+                    <p><b>Job:</b> ${env.JOB_NAME}</p>
+                    <p><b>Build Number:</b> ${env.BUILD_NUMBER}</p>
+                    <p><b>Status:</b> SUCCESS ✅</p>
+                    <p><b>Build URL:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
+                    <p><b>Test Report:</b> <a href="${env.BUILD_URL}Selenium_20Test_20Report/">View Report</a></p>
+                """,
+                mimeType: 'text/html',
+                recipientProviders: [
+                    [$class: 'DevelopersRecipientProvider'],      // Committers
+                    [$class: 'RequesterRecipientProvider'],       // Who triggered build
+                    [$class: 'CulpritsRecipientProvider']         // All since last success
+                ]
+            )
         }
         failure {
             echo '''
@@ -90,6 +113,26 @@ pipeline {
             '''
             // Show container logs on failure
             sh 'docker-compose logs || true'
+            
+            // Email notification on failure to all collaborators
+            emailext(
+                subject: "❌ Build FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """
+                    <h2>Build Failed!</h2>
+                    <p><b>Job:</b> ${env.JOB_NAME}</p>
+                    <p><b>Build Number:</b> ${env.BUILD_NUMBER}</p>
+                    <p><b>Status:</b> FAILED ❌</p>
+                    <p><b>Build URL:</b> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
+                    <p><b>Console Output:</b> <a href="${env.BUILD_URL}console">View Logs</a></p>
+                    <p>Please check the build logs for details.</p>
+                """,
+                mimeType: 'text/html',
+                recipientProviders: [
+                    [$class: 'DevelopersRecipientProvider'],      // Committers
+                    [$class: 'RequesterRecipientProvider'],       // Who triggered build
+                    [$class: 'CulpritsRecipientProvider']         // All since last success
+                ]
+            )
         }
     }
 }
