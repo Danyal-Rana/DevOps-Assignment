@@ -47,6 +47,8 @@ pipeline {
         
         stage('Run Selenium Tests') {
             steps {
+                // Ensure the reports directory exists
+                sh 'mkdir -p tests/reports'
                 // Run tests container
                 sh '''
                     docker-compose run --rm \
