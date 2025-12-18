@@ -61,7 +61,7 @@ pipeline {
     
     post {
         always {
-            node {
+            script {
                 // Archive test reports
                 publishHTML(target: [
                     allowMissing: true,
