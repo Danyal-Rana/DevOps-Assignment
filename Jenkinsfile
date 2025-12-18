@@ -61,21 +61,23 @@ pipeline {
     
     post {
         always {
-            // Archive test reports
-            publishHTML(target: [
-                allowMissing: true,
-                alwaysLinkToLastBuild: true,
-                keepAll: true,
-                reportDir: 'tests/reports',
-                reportFiles: 'test_report.html',
-                reportName: 'Selenium Test Report'
-            ])
-            
-            // Stop and remove all containers
-            sh 'docker-compose down --remove-orphans || true'
-            
-            // Cleanup Docker
-            sh 'docker system prune -f || true'
+            node {
+                // Archive test reports
+                publishHTML(target: [
+                    allowMissing: true,
+                    alwaysLinkToLastBuild: true,
+                    keepAll: true,
+                    reportDir: 'tests/reports',
+                    reportFiles: 'test_report.html',
+                    reportName: 'Selenium Test Report'
+                ])
+                
+                // Stop and remove all containers
+                sh 'docker-compose down --remove-orphans || true'
+                
+                // Cleanup Docker
+                sh 'docker system prune -f || true'
+            }
         }
         success {
             echo '''
