@@ -65,7 +65,7 @@ pipeline {
             '''
             // Email notification on success to all contributors
             mail(
-                to: 'ranadanyalarshad@gmail.com, aka.mdrana@gmail.com',
+                to: 'ranadanyalarshad@gmail.com, aka.mdrana@gmail.com, qasimalik@gmail.com',
                 subject: "✅ Build SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                 body: """Build Successful!
 
@@ -96,7 +96,7 @@ DevOps CI/CD Pipeline - Todo App
             
             // Email notification on failure to all contributors
             mail(
-                to: 'ranadanyalarshad@gmail.com, aka.mdrana@gmail.com',
+                to: 'ranadanyalarshad@gmail.com, aka.mdrana@gmail.com, qasimalik@gmail.com',
                 subject: "❌ Build FAILED: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                 body: """Build Failed!
 
