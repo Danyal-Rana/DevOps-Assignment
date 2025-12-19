@@ -8,8 +8,8 @@ pipeline {
     
     environment {
         COMPOSE_PROJECT_NAME = 'todo-app'
-        MONGO_URI = credentials('mongo-uri')  // Set in Jenkins Credentials
-        JWT_SECRET = credentials('jwt-secret') // Set in Jenkins Credentials
+        MONGO_URI = credentials('mongo-uri')
+        JWT_SECRET = credentials('jwt-secret')
     }
     
     stages {
@@ -17,48 +17,21 @@ pipeline {
             steps {
                 cleanWs()
                 checkout scm
-                echo '✅ Code fetched from GitHub'
             }
         }
-        
-        stage('Build Docker Images') {
+        stage('Build & Up') {
             steps {
                 sh 'docker-compose build'
-                echo '✅ All Docker images built (server, client, tests)'
-            }
-        }
-        
-        stage('Start Application') {
-            steps {
-                // Start app containers
                 sh 'docker-compose up -d server client'
-                
-                // Wait for services to be healthy
-                sh '''
-                    echo "Waiting for services to be ready..."
-                    sleep 20
-                    
-                    # Check if containers are running
-                    docker-compose ps
-                '''
-                echo '✅ Application started in containers'
             }
         }
-        
         stage('Run Selenium Tests') {
             steps {
-                // Ensure the reports directory exists
                 sh 'mkdir -p tests/reports'
-                // Run tests container
-                sh '''
-                    docker-compose run --rm \
-                        -e APP_URL=http://client:80 \
-                        -e HEADLESS=true \
-                        selenium-tests
-                '''
-                echo '✅ Selenium tests completed'
+                sh 'docker-compose run --rm -e APP_URL=http://client:80 -e HEADLESS=true selenium-tests'
             }
         }
+    }
     }
     
     post {
