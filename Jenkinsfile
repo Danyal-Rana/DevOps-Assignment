@@ -28,6 +28,8 @@ pipeline {
         stage('Run Selenium Tests') {
             steps {
                 sh 'mkdir -p tests/reports'
+                // Force rebuild selenium-tests to get latest test files
+                sh 'docker-compose build --no-cache selenium-tests'
                 sh 'docker-compose run --rm -e APP_URL=http://client:80 -e HEADLESS=true selenium-tests'
             }
         }
