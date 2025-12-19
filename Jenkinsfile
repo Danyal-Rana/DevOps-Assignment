@@ -32,7 +32,6 @@ pipeline {
             }
         }
     }
-    }
     
     post {
         always {
