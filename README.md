@@ -1,6 +1,6 @@
 # 📝 MERN Stack Todo Application
 
-> **DevOps Assignment Project** - A full-stack Todo application demonstrating modern web development practices with MongoDB, Express.js, React, and Node.js.
+> **DevOps Assignment Project ** - A full-stack Todo application demonstrating modern web development practices with MongoDB, Express.js, React, and Node.js.
 
 ![MERN Stack](https://img.shields.io/badge/Stack-MERN-green)
 ![Node.js](https://img.shields.io/badge/Node.js-18+-brightgreen)
