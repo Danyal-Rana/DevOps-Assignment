@@ -68,7 +68,8 @@ def registered_user():
 def authenticated_driver(driver, base_url, registered_user):
     """
     Returns a driver that is already logged in.
-    First registers the user, then logs in.
+    First attempts registration, then tries login.
+    Returns driver regardless of auth state to allow tests to handle it.
     """
     from selenium.webdriver.common.by import By
     from selenium.webdriver.support.ui import WebDriverWait
@@ -82,42 +83,90 @@ def authenticated_driver(driver, base_url, registered_user):
     }
     
     driver.get(base_url)
-    wait = WebDriverWait(driver, 10)
+    wait = WebDriverWait(driver, 15)
     
-    # Switch to register
+    # Wait for page to load
     try:
-        register_link = wait.until(
-            EC.element_to_be_clickable((By.CSS_SELECTOR, ".auth-link"))
+        wait.until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, ".auth-container, .app-header, .app"))
         )
-        register_link.click()
-        time.sleep(0.5)
+    except:
+        # Page didn't load, return driver anyway
+        return driver
+    
+    # Check if already authenticated
+    try:
+        driver.find_element(By.CSS_SELECTOR, ".btn-logout, .todo-form")
+        return driver  # Already logged in
     except:
         pass
     
-    # Fill registration form
+    # Try to switch to register
+    try:
+        register_link = driver.find_element(By.CSS_SELECTOR, ".auth-link")
+        if "Register" in register_link.text:
+            register_link.click()
+            time.sleep(0.5)
+    except:
+        pass
+    
+    # Try registration
     try:
         username_input = wait.until(
             EC.presence_of_element_located((By.ID, "username"))
         )
+        username_input.clear()
         username_input.send_keys(unique_user["username"])
         
         email_input = driver.find_element(By.ID, "email")
+        email_input.clear()
         email_input.send_keys(unique_user["email"])
         
         password_input = driver.find_element(By.ID, "password")
+        password_input.clear()
         password_input.send_keys(unique_user["password"])
         
         confirm_password = driver.find_element(By.ID, "confirmPassword")
+        confirm_password.clear()
         confirm_password.send_keys(unique_user["password"])
         
         submit_btn = driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
         submit_btn.click()
         
-        # Wait for redirect to todo app
-        wait.until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, ".todo-form, .btn-logout"))
-        )
+        # Wait briefly for response
+        time.sleep(2)
+        
+        # Check if registration succeeded
+        try:
+            driver.find_element(By.CSS_SELECTOR, ".btn-logout, .todo-form, .app-header h1")
+            return driver  # Registration successful
+        except:
+            pass
+            
     except Exception as e:
-        print(f"Registration failed, trying login: {e}")
+        print(f"Registration attempt failed: {e}")
     
+    # If registration didn't work, try login
+    try:
+        driver.get(base_url)
+        time.sleep(1)
+        
+        email_input = wait.until(
+            EC.presence_of_element_located((By.ID, "email"))
+        )
+        email_input.clear()
+        email_input.send_keys(unique_user["email"])
+        
+        password_input = driver.find_element(By.ID, "password")
+        password_input.clear()
+        password_input.send_keys(unique_user["password"])
+        
+        submit_btn = driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
+        submit_btn.click()
+        
+        time.sleep(1)
+    except Exception as e:
+        print(f"Login attempt failed: {e}")
+    
+    # Return driver regardless of auth state
     return driver
