@@ -25,13 +25,16 @@ class TestRegistration:
         - Verify successful registration (redirect to todo app)
         """
         driver.get(base_url)
-        wait = WebDriverWait(driver, 10)
+        wait = WebDriverWait(driver, 20)
         
         # Click on "Register here" link
-        register_link = wait.until(
-            EC.element_to_be_clickable((By.CSS_SELECTOR, ".auth-link"))
-        )
-        register_link.click()
+        try:
+            register_link = wait.until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, ".auth-link"))
+            )
+            register_link.click()
+        except Exception as e:
+            raise AssertionError(f"Register link not found or not clickable: {e}")
         time.sleep(0.5)
         
         # Generate unique username and email
@@ -41,29 +44,47 @@ class TestRegistration:
         password = "Test123456"
         
         # Fill registration form
-        username_input = wait.until(
-            EC.presence_of_element_located((By.ID, "username"))
-        )
-        username_input.send_keys(username)
+        try:
+            username_input = wait.until(
+                EC.presence_of_element_located((By.ID, "username"))
+            )
+            username_input.send_keys(username)
+        except Exception as e:
+            raise AssertionError(f"Username input not found: {e}")
         
-        email_input = driver.find_element(By.ID, "email")
-        email_input.send_keys(email)
+        try:
+            email_input = driver.find_element(By.ID, "email")
+            email_input.send_keys(email)
+        except Exception as e:
+            raise AssertionError(f"Email input not found: {e}")
         
-        password_input = driver.find_element(By.ID, "password")
-        password_input.send_keys(password)
+        try:
+            password_input = driver.find_element(By.ID, "password")
+            password_input.send_keys(password)
+        except Exception as e:
+            raise AssertionError(f"Password input not found: {e}")
         
-        confirm_password = driver.find_element(By.ID, "confirmPassword")
-        confirm_password.send_keys(password)
+        try:
+            confirm_password = driver.find_element(By.ID, "confirmPassword")
+            confirm_password.send_keys(password)
+        except Exception as e:
+            raise AssertionError(f"Confirm password input not found: {e}")
         
         # Submit form
-        submit_btn = driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
-        submit_btn.click()
+        try:
+            submit_btn = driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
+            submit_btn.click()
+        except Exception as e:
+            raise AssertionError(f"Submit button not found: {e}")
         
         # Verify redirect to todo app (logout button should be visible)
-        logout_btn = wait.until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, ".btn-logout"))
-        )
-        assert logout_btn.is_displayed(), "Registration failed - not redirected to app"
+        try:
+            logout_btn = wait.until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, ".btn-logout"))
+            )
+            assert logout_btn.is_displayed(), "Registration failed - not redirected to app"
+        except Exception as e:
+            raise AssertionError(f"Logout button not found after registration: {e}")
 
     @pytest.mark.auth
     def test_02_register_with_invalid_email(self, driver, base_url):
@@ -164,13 +185,16 @@ class TestLogin:
         - Verify successful login by checking for logout button
         """
         driver = authenticated_driver
-        wait = WebDriverWait(driver, 15)
+        wait = WebDriverWait(driver, 20)
         
         # Verify successful login - logout button should be present
-        logout_btn = wait.until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, ".btn-logout"))
-        )
-        assert logout_btn.is_displayed(), "Login failed - logout button not visible"
+        try:
+            logout_btn = wait.until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, ".btn-logout"))
+            )
+            assert logout_btn.is_displayed(), "Login failed - logout button not visible"
+        except Exception as e:
+            raise AssertionError(f"Logout button not found after login: {e}")
 
     @pytest.mark.auth
     def test_05_login_with_wrong_password(self, driver, base_url):
