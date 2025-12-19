@@ -48,8 +48,8 @@ pipeline {
                         reportFiles: 'test_report.html',
                         reportName: 'Selenium Test Report'
                     ])
-                    // Stop and remove all containers
-                    sh 'docker-compose down --remove-orphans || true'
+                    // Only remove test container, keep app running!
+                    sh 'docker-compose rm -f selenium-tests || true'
                     // Cleanup Docker
                     sh 'docker system prune -f || true'
                 }
