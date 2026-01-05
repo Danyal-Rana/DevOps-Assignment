@@ -35,25 +35,6 @@ services:
     networks:
       - todo-network
 
-  # Selenium Tests (only runs when explicitly called)
-  selenium-tests:
-    build:
-      context: ./tests
-      dockerfile: Dockerfile
-    container_name: todo-tests
-    environment:
-      - APP_URL=http://client:80
-      - HEADLESS=true
-    volumes:
-      - ./tests/reports:/tests/reports
-    depends_on:
-      - client
-      - server
-    networks:
-      - todo-network
-    profiles:
-      - test  # Only runs with: docker-compose --profile test up
-
 networks:
   todo-network:
     driver: bridge
